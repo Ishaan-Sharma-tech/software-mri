@@ -1,0 +1,60 @@
+{
+  "name": "software-mri",
+  "version": "0.1.0",
+  "description": "See your software. Understand your software.",
+  "main": "main/index.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "build": "vite build && electron-builder",
+    "build:msix": "vite build && electron-builder --win msix"
+  },
+  "dependencies": {
+    "@kreuzberg/tree-sitter-language-pack": "^1.8.1",
+    "3d-force-graph": "^1.80.0",
+    "electron-log": "^5.4.4",
+    "electron-updater": "^6.3.0-alpha.5",
+    "express": "^4.19.2",
+    "gsap": "^3.15.0",
+    "jscpd": "^3.5.10",
+    "prismjs": "^1.30.0",
+    "simple-git": "^3.36.0",
+    "sloc": "^0.3.2",
+    "three": "^0.166.1",
+    "three-spritetext": "^1.10.0",
+    "typhonjs-escomplex": "^0.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^31.2.0",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.3.4",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.softwaremri.app",
+    "productName": "Software MRI",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "dist/**/*",
+      "main/**/*",
+      "package.json"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "Ishaan-Sharma-tech",
+      "repo": "software-mri"
+    }
+  }
+}

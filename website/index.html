@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Software MRI | Stop reading code. Start seeing it.</title>
+  <meta name="description" content="Visualizes your entire codebase as a living, interactive 3D galaxy. Spot technical debt, trace dependencies, and understand any architecture instantly.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- GSAP Core and ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+  <!-- Ambient Background -->
+  <div class="bg-grid"></div>
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+  <div class="ambient-glow glow-center"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <div class="logo">
+        <img src="assets/logo.png" alt="Software MRI Logo" class="logo-img">
+        <span>Software <strong>MRI</strong></span>
+      </div>
+      <div class="nav-links">
+        <a href="#problem">The Problem</a>
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+      </div>
+      <div class="nav-cta">
+        <a href="https://github.com/software-mri/releases/latest/download/Software.MRI.Setup.exe" class="btn btn-nav">Download Beta</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <!-- Interactive Background Canvas -->
+    <canvas id="hero-canvas"></canvas>
+    
+    <div class="container hero-container relative">
+      <div class="hero-content text-center">
+        <div class="badge fade-up">Now in Private Beta</div>
+        <h1 class="hero-title fade-up">Stop reading code.<br><span class="text-gradient">Start seeing it.</span></h1>
+        <p class="hero-subtitle fade-up">Software MRI transforms your massive, tangled codebases into living, breathing 3D galaxies. Uncover architectural flaws, trace execution bloodflow, and master any project in seconds—not weeks.</p>
+        
+        <div class="hero-cta-group fade-up">
+          <a href="https://github.com/software-mri/releases/latest/download/Software.MRI.Setup.exe" class="btn btn-primary btn-large">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download for Windows
+            <span class="btn-sub">v0.1.0 • Free & Open Source</span>
+          </a>
+        </div>
+        <p class="hero-disclaimer fade-up">100% Local Processing. Your code never touches the cloud.</p>
+      </div>
+      
+      <!-- Hero Product Showcase -->
+      <div class="hero-showcase fade-up">
+        <div class="glass-panel app-window" style="padding: 0; overflow: hidden; display: flex;">
+          <img src="assets/hero-screenshot.png" alt="Software MRI Wide View" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Problem Statement Section -->
+  <section id="problem" class="problem-section">
+    <div class="container">
+      <div class="two-col align-center">
+        <div class="col-text gs-reveal">
+          <h2 class="section-title">The human brain wasn't built to read millions of lines of text.</h2>
+          <p class="section-desc">Traditional IDEs force you to view massive architectures through a tiny peephole—one file at a time. When onboarding to a new project or hunting down technical debt, you are navigating blind.</p>
+          <ul class="check-list">
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg> Endless file trees provide zero context.</li>
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg> Spaghetti dependencies are invisible until they break.</li>
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg> Technical debt hides silently in legacy folders.</li>
+          </ul>
+        </div>
+        <div class="col-visual gs-reveal gs-right">
+          <div class="glass-panel visual-card relative">
+            <div class="code-snippet">
+              <span class="keyword">import</span> { <span>chaos</span> } <span class="keyword">from</span> <span class="string">'./legacy/core'</span>;<br>
+              <span class="keyword">import</span> { <span>spaghetti</span> } <span class="keyword">from</span> <span class="string">'./utils/helpers'</span>;<br><br>
+              <span class="comment">// TODO: Refactor this someday...</span><br>
+              <span class="keyword">class</span> <span>Monolith</span> <span class="keyword">extends</span> <span>GodObject</span> {<br>
+              &nbsp;&nbsp;<span>constructor</span>() {<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;<span>super</span>(<span>chaos</span>, <span>spaghetti</span>);<br>
+              &nbsp;&nbsp;}<br>
+              }
+            </div>
+            <div class="cross-strike"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Deep Dive Features -->
+  <section id="features" class="deep-features">
+    
+    <!-- Feature 1: Galactic Architecture -->
+    <div class="feature-row">
+      <div class="container two-col align-center">
+        <div class="col-visual gs-reveal gs-left">
+          <div class="glass-panel feature-hero-card">
+            <div class="icon-ring cyan">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <div class="mock-graphic graphic-galaxy" style="padding: 0; overflow: hidden; border-radius: 12px; display: flex;">
+              <img src="assets/cluster-screenshot.png" alt="Galactic Clustering" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+          </div>
+        </div>
+        <div class="col-text gs-reveal">
+          <div class="tag cyan-tag">Spatial Mapping</div>
+          <h2 class="section-title">Galactic Clustering</h2>
+          <p class="section-desc">Software MRI translates your folder hierarchy into gravitational physics. Directories become massive hubs that pull their dependent files into dense, recognizable clusters.</p>
+          <p class="section-desc text-muted">Navigate your codebase spatially. Memorize the shape of your architecture, and instantly notice when a new pull request disrupts the structure.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2: Bloodflow -->
+    <div class="feature-row reverse">
+      <div class="container two-col align-center">
+        <div class="col-text gs-reveal">
+          <div class="tag purple-tag">Execution Tracing</div>
+          <h2 class="section-title">Bloodflow Analysis</h2>
+          <p class="section-desc">Static code analysis only tells half the story. Switch to the Bloodflow layer to watch glowing particles pulse through the exact pathways your application takes during execution.</p>
+          <p class="section-desc text-muted">Follow the neon trails to understand complex data flows, find performance bottlenecks, and visualize how your microservices truly interact.</p>
+        </div>
+        <div class="col-visual gs-reveal gs-right">
+          <div class="glass-panel feature-hero-card">
+            <div class="icon-ring purple">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            </div>
+            <div class="mock-graphic graphic-bloodflow">
+              <div class="b-node b-start"></div>
+              <div class="b-line">
+                 <div class="b-particle"></div>
+              </div>
+              <div class="b-node b-end"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3: Disease Radar -->
+    <div class="feature-row">
+      <div class="container two-col align-center">
+        <div class="col-visual gs-reveal gs-left">
+          <div class="glass-panel feature-hero-card">
+            <div class="icon-ring red">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <div class="mock-graphic graphic-disease">
+              <div class="d-node healthy d1"></div>
+              <div class="d-node healthy d2"></div>
+              <div class="d-node infected d3"></div>
+              <div class="d-node healthy d4"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-text gs-reveal">
+          <div class="tag red-tag">Tech Debt Radar</div>
+          <h2 class="section-title">The Disease Layer</h2>
+          <p class="section-desc">Instantly identify the most dangerous parts of your codebase. The Disease layer highlights files in bright red based on extreme cyclomatic complexity, massive line counts, or high historical churn.</p>
+          <p class="section-desc text-muted">Don't guess where the tech debt lives. See it glowing like a beacon, and target your refactoring efforts where they matter most.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy / Local First Section -->
+  <section id="privacy" class="privacy-section">
+    <div class="container text-center gs-reveal">
+      <div class="shield-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <h2 class="section-title">Your Code. Your Machine.</h2>
+      <p class="section-desc max-w-700 mx-auto">We understand that code is your most valuable asset. Software MRI is built completely <strong>Local-First</strong> using Electron. The AST parsing, Git cloning, and intense physics simulations all happen locally on your CPU and GPU.</p>
+      <div class="glass-panel security-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>Zero Cloud Telemetry</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="container text-center">
+      <div class="cta-box glass-panel gs-reveal">
+        <h2>Experience your architecture today.</h2>
+        <p>Join the private beta. It's free, completely open-source, and ready for your largest repositories.</p>
+        <a href="https://github.com/software-mri/releases/latest/download/Software.MRI.Setup.exe" class="btn btn-primary btn-large glow-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Download v0.1.0 (.exe)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <div class="logo">
+          <img src="assets/logo.png" alt="Logo" class="logo-img">
+          <span>Software <strong>MRI</strong></span>
+        </div>
+        <p class="footer-desc">Next-generation architectural visualization for professional engineers.</p>
+      </div>
+      <div class="footer-links-grid">
+        <div class="link-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#privacy">Privacy & Security</a>
+        </div>
+        <div class="link-col">
+          <h4>Developers</h4>
+          <a href="https://github.com/software-mri" target="_blank">GitHub Repository</a>
+          <a href="#">Documentation</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Software MRI. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

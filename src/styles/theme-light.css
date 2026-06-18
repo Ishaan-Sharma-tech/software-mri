@@ -1,0 +1,26 @@
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-hover: rgba(241, 245, 249, 0.95);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-default: rgba(0,0,0,0.08);
+  --border-hover: rgba(0,0,0,0.15);
+
+  /* Same accent colors — they work on both backgrounds */
+  --accent-blue: #2563eb;
+  --accent-violet: #7c3aed;
+  --accent-emerald: #059669;
+  --accent-rose: #e11d48;
+  --accent-amber: #d97706;
+  --accent-cyan: #0891b2;
+
+  --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+  --gradient-success: linear-gradient(135deg, #059669, #0891b2);
+  --gradient-danger: linear-gradient(135deg, #e11d48, #d97706);
+}

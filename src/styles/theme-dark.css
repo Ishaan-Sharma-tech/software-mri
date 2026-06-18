@@ -1,0 +1,27 @@
+[data-theme="dark"] {
+  /* Minimalist Monochrome - Improved Contrast */
+  --bg-primary: #000000;
+  --bg-secondary: #0f0f11;
+  --bg-tertiary: #18181b;
+  --bg-glass: rgba(0, 0, 0, 0.7);
+  --bg-glass-hover: rgba(24, 24, 27, 0.9);
+
+  --text-primary: #ffffff;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+
+  --border-default: #333333;
+  --border-hover: #52525b;
+
+  --accent-blue: #ffffff; /* Replaced neon with stark white/grey for UI */
+  --accent-violet: #d4d4d8;
+  --accent-emerald: #10b981; /* Keep some semantic colors for health/success */
+  --accent-rose: #ef4444;    /* Keep red for destructive/errors */
+  --accent-amber: #f59e0b;
+  --accent-cyan: #e4e4e7;
+
+  /* No heavy gradients in the UI */
+  --gradient-primary: none;
+  --gradient-success: none;
+  --gradient-danger: none;
+}

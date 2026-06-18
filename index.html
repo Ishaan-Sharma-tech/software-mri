@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Content Security Policy for Electron -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Software MRI</title>
+    <link rel="stylesheet" href="./src/styles/tokens.css">
+    <link rel="stylesheet" href="./src/styles/theme-dark.css">
+    <link rel="stylesheet" href="./src/styles/theme-light.css">
+    <link rel="stylesheet" href="./src/styles/base.css">
+    <link rel="stylesheet" href="./src/styles/layout.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Titlebar injected here -->
+      <div id="titlebar-container"></div>
+      
+      <!-- Main Content Area -->
+      <div id="main-content">
+        <!-- Screens injected here -->
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "id": "express-demo",
+  "name": "express-demo",
+  "nodes": [
+    { "id": "src/index.js", "name": "index.js", "group": "entry" },
+    { "id": "src/app.js", "name": "app.js", "group": "core" },
+    { "id": "src/routes/api.js", "name": "api.js", "group": "routes" }
+  ],
+  "links": [
+    { "source": "src/index.js", "target": "src/app.js" },
+    { "source": "src/app.js", "target": "src/routes/api.js" }
+  ]
+}
