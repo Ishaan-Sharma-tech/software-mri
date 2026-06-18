@@ -3,14 +3,14 @@ name: Release
 on:
   push:
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'v*'
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build-and-release:
     runs-on: windows-latest
     permissions:
-      contents: write # Required for electron-builder to upload the release and updater files
+      contents: write
     
     steps:
       - name: Check out Git repository
@@ -25,6 +25,17 @@ jobs:
         run: npm ci
         
       - name: Build App and Installer
-        run: npx vite build && npx electron-builder --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # We use --publish never because we will upload it manually in the next step
+        run: npx vite build && npx electron-builder --publish never
+        
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # If triggered by workflow_dispatch (no tag), it will create a draft release.
+          # If triggered by a tag, it creates a published release.
+          files: |
+            release/*.exe
+            release/*.yml
+            release/*.blockmap
+          generate_release_notes: true
+          draft: false
