@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/icon.png" width="128" height="128" alt="Software MRI Logo">
+  <img src="build/icon.png" width="128" height="128" alt="Software MRI Logo">
   
   <h1>Software MRI</h1>
   
