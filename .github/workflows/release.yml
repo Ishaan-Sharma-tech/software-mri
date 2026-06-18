@@ -8,6 +8,8 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: write # Required for electron-builder to upload the release and updater files
     
     steps:
       - name: Check out Git repository
@@ -25,29 +27,3 @@ jobs:
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: dist/*.exe
-
-  release:
-    needs: [build-windows]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # Required for creating releases
-      
-    steps:
-      - name: Download Windows Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-installer
-          path: windows-installer
-          
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            windows-installer/*.exe
-          generate_release_notes: true
