@@ -1,93 +1,90 @@
 <div align="center">
-  <img src="build/icon.png" width="128" height="128" alt="Software MRI Logo" />
+  <img src="assets/icon.png" width="128" height="128" alt="Software MRI Logo">
+  
   <h1>Software MRI</h1>
-  <p><strong>See Your Code. Understand Your Architecture.</strong></p>
+  
+  <p><strong>A fundamentally new way for humans to understand software systems.</strong></p>
 
   <p>
-    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest/download/Software.MRI.Setup.exe">Download for Windows (.exe)</a>
-    ·
-    <a href="https://github.com/Ishaan-Sharma-tech/software-mri">View Repository</a>
-    ·
-    <a href="#getting-started">Documentation</a>
+    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest"><img src="https://img.shields.io/github/v/release/Ishaan-Sharma-tech/software-mri?style=for-the-badge&color=06b6d4" alt="Latest Release"></a>
+    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Ishaan-Sharma-tech/software-mri?style=for-the-badge&color=8b5cf6" alt="License"></a>
+    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases"><img src="https://img.shields.io/github/downloads/Ishaan-Sharma-tech/software-mri/total?style=for-the-badge&color=10b981" alt="Downloads"></a>
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Mac%20%7C%20Linux-blue?style=flat-square" />
-    <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
-    <img src="https://img.shields.io/badge/Built%20with-Electron%20%26%20WebGL-cyan?style=flat-square" />
+    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest"><b>Download for Windows (.exe)</b></a> • 
+    <a href="mailto:your-email@example.com"><b>Contact</b></a> • 
+    <a href="https://twitter.com/your-twitter"><b>Twitter</b></a>
   </p>
 </div>
 
 ---
 
-**Software MRI** is an ultra-fast, local-first code analysis tool that visualizes your entire codebase as a living, interactive 3D galaxy. Powered by Electron and WebGL, it runs completely on your machine ensuring your proprietary code never leaves your local environment.
+## 🌌 The Problem
+
+Modern codebases are massive, tangled webs of hundreds of files, circular dependencies, and hidden logic. When joining a new project or planning a major refactor, developers spend **weeks** just trying to map out how the code works in their head.
+
+We were tired of getting lost in 10,000-file repositories. 
+
+## 🚀 The Solution
+
+**Software MRI** transforms your codebase into a living, breathing 3D digital organism. 
+
+Instead of reading text top-to-bottom, you **fly through your architecture** in a beautiful 3D galaxy. You can visually uncover architectural flaws, trace execution bloodflow, and master any project in seconds.
 
 ## ✨ Features
 
-- **Galactic Folder Clustering:** Explore your architecture naturally. Folders act as massive gravitational hubs, pulling associated files into distinct, colorful solar systems.
-- **Native Git Integration:** Instantly clone and analyze any public Git repository securely without needing mock APIs.
-- **Bloodflow Analysis:** Switch to the Bloodflow layer to visualize execution paths and dependencies pulsing through your code.
-- **Disease & Tech Debt Highlighting:** The Disease layer instantly illuminates bloated, overly-complex, or highly-churned files in bright red.
-- **Integrated AI Brain:** Chat seamlessly with your codebase. Ask questions about your architecture, and it will highlight the relevant nodes directly in the 3D graph.
+- **Blazing Fast 3D Simulation:** Powered by a custom WebWorker physics engine and Aggressive Level-of-Detail (LOD). Easily renders 5,000+ file repositories at 60 FPS without freezing your UI.
+- **Universal Language Support:** 300+ programming languages supported out of the box via `tree-sitter` AST parsing.
+- **Disease Detection:** Instantly spot circular dependencies, massive files, and extreme cyclomatic complexity with glowing red hazard indicators.
+- **100% Local & Private:** Your code never leaves your machine. No telemetry. No cloud required. 
 
-## 🚀 Download
+---
 
-You can download the latest pre-compiled beta installer directly:
-**[Download Software MRI v1.0.0 (.exe)](https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest/download/Software.MRI.Setup.exe)**
+## 🛠️ How it Works (Under the Hood)
 
-## 💻 Getting Started (For Developers)
+Software MRI uses a chunked, multi-layered static analysis pipeline:
 
-If you'd like to build the project from source or contribute:
+```mermaid
+graph TB
+    subgraph Electron ["Electron App (Local & Secure)"]
+        subgraph Main ["Main Process (Node.js)"]
+            PARSER["Tree-sitter AST Parser<br/>(Extracts Imports/Exports)"]
+            ANALYZER["Static Disease Analyzers<br/>(Cycles & Complexity)"]
+        end
 
-### Prerequisites
-- [Node.js](https://nodejs.org/en/) (v18+)
-- [Git](https://git-scm.com/)
+        subgraph Renderer ["Renderer Process (Chromium)"]
+            WORKER["WebWorker<br/>(3D Force Simulation)"]
+            VIZ["Three.js Visualization<br/>(Custom LOD shaders)"]
+        end
+    end
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Ishaan-Sharma-tech/software-mri.git
-   cd software-mri
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-   *This will start Vite and the Electron app simultaneously.*
-
-### Packaging for Release
-
-To compile the application into a standalone Windows installer (`.exe`):
-```bash
-# Note: You must run your terminal as Administrator on Windows 
-# so electron-builder can create symlinks during code-signing
-npm run build
+    PARSER --> ANALYZER
+    ANALYZER -->|Chunked Data| WORKER
+    WORKER -->|Physics Ticks| VIZ
 ```
-The compiled installer will be available in the `release/` directory.
+
+---
+
+## 📥 Installation
+
+1. Head over to the **[Releases Page](https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest)**.
+2. Download the latest `Software.MRI.Setup.X.X.X.exe`.
+3. Run the installer (it takes 5 seconds and requires zero setup).
+4. Drag and drop any local folder into the app to watch it come alive!
+
+*(Note: MacOS and Linux builds are on the roadmap!)*
 
 ## 🤝 Contributing
-Software MRI is built by developers, for developers, and we would absolutely love your help! 
 
-Whether you want to add new visual layers, improve the 3D WebGL physics, add support for new programming languages, or simply fix a bug—your contributions are deeply appreciated.
+We would absolutely love your help making Software MRI the ultimate developer tool! Whether it's adding new language support, optimizing the Three.js shaders, or fixing bugs:
 
-**How to get started:**
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Clone the repo: `git clone https://github.com/Ishaan-Sharma-tech/software-mri.git`
+2. Install dependencies: `npm ci`
+3. Run the dev server: `npm run dev`
 
-If you have a massive feature idea, feel free to open an **Issue** first so we can discuss the architecture!
+Check out our [CONTRIBUTING.md](CONTRIBUTING.md) for a deep dive into the architecture and how to submit PRs!
 
-## 🛡️ Privacy & Security
-Software MRI is built strictly **Local-First**. We believe code is proprietary and private. The AST parsing, git cloning, and graph physics all happen locally on your CPU/GPU. No code is ever uploaded to a cloud server without your explicit LLM API key usage.
+## 📄 License
 
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
+This project is licensed under the MIT License - see the LICENSE file for details.
