@@ -12,7 +12,8 @@
   </p>
 
   <p>
-    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest"><b>Download for Windows (.exe)</b></a> • 
+    <a href="https://ishaan-sharma-tech.github.io/software-mri"><b>Live Website</b></a> • 
+    <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest"><b>Download (.exe)</b></a> • 
     <a href="mailto:your-email@example.com"><b>Contact</b></a> • 
     <a href="https://twitter.com/your-twitter"><b>Twitter</b></a>
   </p>
