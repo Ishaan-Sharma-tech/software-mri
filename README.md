@@ -14,8 +14,8 @@
   <p>
     <a href="https://ishaan-sharma-tech.github.io/software-mri"><b>Live Website</b></a> • 
     <a href="https://github.com/Ishaan-Sharma-tech/software-mri/releases/latest"><b>Download (.exe)</b></a> • 
-    <a href="mailto:your-email@example.com"><b>Contact</b></a> • 
-    <a href="https://twitter.com/your-twitter"><b>Twitter</b></a>
+    <a href="mailto:ishaansharma2010work@gmail.com"><b>Contact</b></a> • 
+    <a href="[https://twitter.com/your-twitter](https://x.com/IshaanSharmaDev)"><b>Twitter</b></a> 
   </p>
 </div>
 
@@ -28,6 +28,10 @@ Modern codebases are massive, tangled webs of hundreds of files, circular depend
 We were tired of getting lost in 10,000-file repositories. 
 
 ## 🚀 The Solution
+
+![Recording 2026-06-18 104517](https://github.com/user-attachments/assets/31dbb2fc-1401-4e90-99b3-64ce3c2d66a7)
+
+
 
 **Software MRI** transforms your codebase into a living, breathing 3D digital organism. 
 
