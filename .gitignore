@@ -4,3 +4,5 @@ release/
 .env
 .DS_Store
 *.log
+models/
+*.gguf

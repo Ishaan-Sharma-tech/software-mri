@@ -92,9 +92,6 @@ export function showHealthDashboard(container, data) {
   // Close handler
   panel.querySelector('#close-health-dashboard').addEventListener('click', () => {
     panel.style.transform = 'translateX(-50%) translateY(150%)';
-    setTimeout(() => {
-      // Revert to skeleton layer automatically
-      window.dispatchEvent(new CustomEvent('toolbar:action', { detail: { action: 'btn-layer-skeleton' } }));
-    }, 400); // Wait for animation
+    // Removed auto-revert so user can view the disease layer clearly
   });
 }

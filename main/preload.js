@@ -15,9 +15,11 @@ contextBridge.exposeInMainWorld('smri', {
   analyze: (projectPath) => ipcRenderer.invoke('analyze:start', projectPath),
   onProgress: (cb) => {
     ipcRenderer.on('analyze:progress', (_, data) => cb(data));
+    ipcRenderer.on('analyze:error', (_, err) => cb({ status: 'error', message: err }));
     ipcRenderer.on('github:progress', (_, data) => cb(data));
     return () => {
       ipcRenderer.removeAllListeners('analyze:progress');
+      ipcRenderer.removeAllListeners('analyze:error');
       ipcRenderer.removeAllListeners('github:progress');
     };
   },
@@ -25,7 +27,27 @@ contextBridge.exposeInMainWorld('smri', {
   // Settings & LLM
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (settings) => ipcRenderer.invoke('settings:set', settings),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  onAnalyzeError: (callback) => ipcRenderer.on('analyze:error', (_event, error) => callback(error)),
   testConnection: () => ipcRenderer.invoke('llm:testConnection'),
+
+  // Local AI Model
+  aiCheckModel: () => ipcRenderer.invoke('ai:check-model'),
+  aiDownloadModel: () => ipcRenderer.invoke('ai:download'),
+  aiStop: () => ipcRenderer.invoke('ai:stop'),
+  aiChat: (payload) => ipcRenderer.invoke('ai:chat', payload),
+  onAIToken: (callback) => {
+    ipcRenderer.removeAllListeners('ai:token');
+    ipcRenderer.on('ai:token', (_event, data) => callback(data.token));
+  },
+  onAIDone: (callback) => {
+    ipcRenderer.removeAllListeners('ai:done');
+    ipcRenderer.on('ai:done', () => callback());
+  },
+  onAIDownloadProgress: (callback) => {
+    ipcRenderer.removeAllListeners('ai:download-progress');
+    ipcRenderer.on('ai:download-progress', (_event, data) => callback(data));
+  },
 
   // Advanced Layers
   getOrgans: (projectId) => ipcRenderer.invoke('analyze:organs', projectId),

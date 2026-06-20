@@ -24,7 +24,33 @@ export function showDetailPanel(container, fileData, node) {
     gap: 24px;
   `;
 
-  if (!fileData) {
+  if (node && node.type === 'folder') {
+    panel.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div style="display: inline-block; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); color: var(--accent-cyan); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+            Directory
+          </div>
+          <h2 style="font-size: 20px; font-weight: 600; word-break: break-all; line-height: 1.3;">${node.name}</h2>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-close-panel" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-full); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px;">Path</div>
+        <div style="font-size: 12px; font-family: var(--font-mono); color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); word-break: break-all; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
+          ${node.id}
+        </div>
+      </div>
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: var(--radius-md);">
+        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Contained Items</div>
+        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${node.val} <span style="font-size: 12px; color: var(--text-secondary); font-weight: 400;">files/folders</span></div>
+      </div>
+    `;
+  } else if (!fileData) {
     panel.innerHTML = `<p style="color: var(--text-secondary);">Loading temporal data...</p>`;
   } else {
     const renderList = (items, icon) => {
@@ -46,6 +72,9 @@ export function showDetailPanel(container, fileData, node) {
           <h2 style="font-size: 20px; font-weight: 600; word-break: break-all; line-height: 1.3;">${fileData.name}</h2>
         </div>
         <div style="display: flex; gap: 8px;">
+          <button id="btn-isolate" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: var(--radius-full); padding: 0 12px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--accent-violet); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast);">
+            Isolate Network
+          </button>
           <button id="btn-view-source" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-full); padding: 0 12px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--accent-emerald); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast);">
             View Source
           </button>
@@ -148,6 +177,21 @@ export function showDetailPanel(container, fileData, node) {
       import('./code-viewer.js').then(({ showCodeViewer }) => {
         showCodeViewer(document.body, fileData);
       });
+    });
+  }
+
+  const btnIsolate = panel.querySelector('#btn-isolate');
+  if (btnIsolate) {
+    btnIsolate.onmouseover = () => {
+      btnIsolate.style.background = 'rgba(139, 92, 246, 0.2)';
+      btnIsolate.style.transform = 'scale(1.05)';
+    };
+    btnIsolate.onmouseout = () => {
+      btnIsolate.style.background = 'rgba(139, 92, 246, 0.1)';
+      btnIsolate.style.transform = 'scale(1)';
+    };
+    btnIsolate.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('graph:isolate-node', { detail: { nodeId: fileData.id } }));
     });
   }
 }

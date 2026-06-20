@@ -148,10 +148,24 @@ function detectDiseases(files, graph) {
   else if (projectScore >= 70) grade = 'C';
   else if (projectScore >= 60) grade = 'D';
 
+  // Aggregate all issues for the report
+  const allIssues = [...issues];
+  files.forEach(f => {
+    if (f.healthIssues) {
+      // Avoid duplicating circular dependencies since they were added to file.healthIssues too
+      f.healthIssues.forEach(fi => {
+        if (!fi.message.includes('Circular dependency')) {
+          allIssues.push({ fileId: f.id, type: fi.type, message: fi.message });
+        }
+      });
+    }
+  });
+
   return {
     score: Math.round(projectScore),
     grade,
-    totalIssues: issues.length + files.reduce((acc, f) => acc + (f.healthIssues?.length || 0), 0)
+    totalIssues: allIssues.length,
+    issues: allIssues
   };
 }
 

@@ -57,6 +57,12 @@ class GeminiProvider {
     }
 
     const data = await response.json();
+    if (!data.candidates || data.candidates.length === 0) {
+      if (data.promptFeedback?.blockReason) {
+        throw new Error(`Request was blocked by Gemini safety filters: ${data.promptFeedback.blockReason}`);
+      }
+      throw new Error('Gemini returned an empty response (possibly due to high demand or rate limits).');
+    }
     return data.candidates[0].content.parts[0].text;
   }
 }

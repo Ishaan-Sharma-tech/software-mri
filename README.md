@@ -42,7 +42,8 @@ Instead of reading text top-to-bottom, you **fly through your architecture** in 
 - **Blazing Fast 3D Simulation:** Powered by a custom WebWorker physics engine and Aggressive Level-of-Detail (LOD). Easily renders 5,000+ file repositories at 60 FPS without freezing your UI.
 - **Universal Language Support:** 300+ programming languages supported out of the box via `tree-sitter` AST parsing.
 - **Disease Detection:** Instantly spot circular dependencies, massive files, and extreme cyclomatic complexity with glowing red hazard indicators.
-- **100% Local & Private:** Your code never leaves your machine. No telemetry. No cloud required. 
+- **Local AI Brain:** Query an embedded AI model (Qwen2.5-Coder) that runs entirely locally on your hardware to understand complex code structures—no API keys required.
+- **100% Local & Private:** Your code and AI queries never leave your machine. No telemetry. No cloud required. 
 
 ---
 
@@ -67,6 +68,7 @@ graph TB
     PARSER --> ANALYZER
     ANALYZER -->|Chunked Data| WORKER
     WORKER -->|Physics Ticks| VIZ
+    Main -->|Local AI Inference| MODEL["node-llama-cpp<br/>(GGUF Local Model)"]
 ```
 
 ---

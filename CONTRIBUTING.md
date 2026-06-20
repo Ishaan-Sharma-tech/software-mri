@@ -27,6 +27,7 @@ Before contributing, it's highly recommended you understand the basic architectu
 This runs in Node.js and handles the heavy lifting:
 - **`main/parsers/`**: Uses `tree-sitter` to parse code into ASTs.
 - **`main/analyzers/`**: Reads the ASTs to find dependencies, calculate metrics, and detect "diseases" (like circular dependencies).
+- **`main/llm/`**: Integrates with `node-llama-cpp` for local, fully private AI models (GGUF format).
 - **`main/ipc/`**: Handles communication with the UI.
 
 ### 2. Renderer Process (`src/`)

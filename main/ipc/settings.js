@@ -14,7 +14,8 @@ try {
 async function getSettings() {
   try {
     const data = await fs.readFile(settingsPath, 'utf-8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    return parsed;
   } catch (e) {
     return {
       llmProvider: 'none',

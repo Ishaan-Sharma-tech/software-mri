@@ -18,7 +18,8 @@ function buildGraph(files) {
       path: f.path,
       val: Math.max(1, Math.min((f.lines?.total || 10) / 10, 50)), // Size of node based on lines
       language: f.language,
-      group: path.dirname(f.path)
+      group: path.dirname(f.path),
+      churn: f.churnCount || 0
     });
   });
 

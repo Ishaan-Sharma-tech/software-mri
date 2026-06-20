@@ -52,8 +52,8 @@ Instructions:
       references
     };
   } catch (err) {
-    console.error("Brain query failed:", err);
-    throw err;
+    console.error("Brain query failed:", err.message);
+    return { error: err.message || "Failed to query brain." };
   }
 }
 

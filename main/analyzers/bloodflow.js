@@ -42,7 +42,7 @@ async function analyzeBloodFlow(projectId) {
   const nodes = data.graph.nodes;
   const links = data.graph.links;
 
-  // Enrich nodes with flow types
+  // Enrich nodes with flow types and hotspot scores
   nodes.forEach(node => {
     const fileData = files.find(f => f.id === node.id);
     if (fileData) {
@@ -50,6 +50,16 @@ async function analyzeBloodFlow(projectId) {
     } else {
       node.flows = ['execution'];
     }
+
+    // Calculate Hotspot Score (0-100)
+    // High incoming dependencies + large file = massive bottleneck/hotspot
+    const inLinks = links.filter(l => (typeof l.target === 'object' ? l.target.id : l.target) === node.id).length;
+    const outLinks = links.filter(l => (typeof l.source === 'object' ? l.source.id : l.source) === node.id).length;
+    const loc = fileData?.lines?.total || 10;
+    
+    let score = (inLinks * 8) + (outLinks * 2) + (loc / 15);
+    if (score > 100) score = 100;
+    node.hotspotScore = score;
   });
 
   // Enrich links with particle properties based on target node's flow
@@ -71,6 +81,13 @@ async function analyzeBloodFlow(projectId) {
         particleColor = '#8b5cf6'; // Purple (Events)
         flowType = 'event';
       }
+    }
+
+    // Hotspot targets pull bright red particles
+    if (targetNode && targetNode.hotspotScore > 75) {
+      particleColor = '#ef4444'; // Radioactive Red
+    } else if (targetNode && targetNode.hotspotScore > 50) {
+      particleColor = '#f97316'; // Orange
     }
 
     // Attach flow info to link so frontend can render particles

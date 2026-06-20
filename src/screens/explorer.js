@@ -37,19 +37,52 @@ export function initGraph(container, data) {
 
   const graphContainer = container.querySelector('#graph-container');
   
-  // Neon colors for extensions
-  const colorMap = {
-    '.js': '#fcd34d',   // Amber
-    '.ts': '#38bdf8',   // Light Blue
-    '.jsx': '#fbbf24',  // Yellow
-    '.tsx': '#0ea5e9',  // Sky Blue
-    '.html': '#fb923c', // Orange
-    '.css': '#c084fc',  // Purple
-    '.py': '#60a5fa',   // Blue
-    '.rs': '#f87171',   // Red
-    '.go': '#2dd4bf',   // Teal
-    '.json': '#a3e635'  // Lime
+  // Semantic Tech-Stack Coloring
+  const getSemanticColor = (path, name) => {
+    const p = (path || name || '').toLowerCase();
+    if (p.includes('/components/') || p.includes('/screens/') || p.includes('/ui/') || p.match(/\.(jsx|tsx|css|html|scss)$/)) {
+      return '#0ea5e9'; // UI/Frontend (Cyan/Blue)
+    }
+    if (p.includes('/api/') || p.includes('/routes/') || p.includes('/controllers/') || p.includes('/services/') || p.match(/\.(go|rs)$/)) {
+      return '#c084fc'; // Backend/API (Purple)
+    }
+    if (p.includes('/models/') || p.includes('/db/') || p.match(/\.sql$/)) {
+      return '#10b981'; // Database/Models (Emerald)
+    }
+    if (p.includes('config') || p.includes('webpack') || p.includes('vite') || p.match(/(\.json|\.env|\.yml|\.md)$/) || name.startsWith('.')) {
+      return '#64748b'; // Config/Infra (Slate)
+    }
+    return '#fbbf24'; // General Logic (Amber)
   };
+
+  // Pre-process nodes for Structural Clustering
+  const structuralGroups = {};
+  data.graph.nodes.forEach(n => {
+    const pathStr = n.id.replace(/\\/g, '/');
+    const parts = pathStr.split('/');
+    // Use top-level directory as group
+    n.structGroup = parts.length > 1 ? parts[0] : 'Root';
+    if (!structuralGroups[n.structGroup]) {
+      structuralGroups[n.structGroup] = { nodes: [], color: getSemanticColor(n.id, n.name) };
+    }
+    structuralGroups[n.structGroup].nodes.push(n.id);
+  });
+
+  // Assign physical target centers for each group to create "Solar Systems"
+  const groupCenters = {};
+  const groupKeys = Object.keys(structuralGroups);
+  const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
+  groupKeys.forEach((g, i) => {
+    // Distribute centers in a 3D sphere using Fibonacci sphere
+    const y = 1 - (i / (groupKeys.length - 1)) * 2; // y goes from 1 to -1
+    const radius = Math.sqrt(1 - y * y);
+    const theta = phi * i;
+    groupCenters[g] = {
+      x: Math.cos(theta) * radius * 800,
+      y: y * 600,
+      z: Math.sin(theta) * radius * 800
+    };
+  });
 
   // Build graph
   const Graph = ForceGraph3D({
@@ -58,16 +91,42 @@ export function initGraph(container, data) {
   })(graphContainer)
     .graphData(data.graph)
     .backgroundColor('rgba(0,0,0,0)') 
-    .linkColor(link => link.type === 'structure' ? 'rgba(6, 182, 212, 0.05)' : 'rgba(255, 255, 255, 0.15)')
-    .linkWidth(link => link.type === 'structure' ? 0.1 : 0.5)
+    .linkColor(link => {
+      if (link.type === 'structure') {
+        const sourceGroup = link.source.structGroup || link.source;
+        const targetGroup = link.target.structGroup || link.target;
+        return sourceGroup === targetGroup ? 'rgba(6, 182, 212, 0.15)' : 'rgba(244, 63, 94, 0.08)';
+      }
+      return 'rgba(255, 255, 255, 0.15)';
+    })
+    .linkWidth(link => {
+      if (activeLayer === 'disease') {
+        const s = link.source.healthScore !== undefined ? link.source.healthScore : 100;
+        const t = link.target.healthScore !== undefined ? link.target.healthScore : 100;
+        if (s < 50 || t < 50) return 1.5; // Thicker spreading links
+      }
+      if (link.type === 'structure') {
+        const sourceGroup = link.source.structGroup || link.source;
+        const targetGroup = link.target.structGroup || link.target;
+        return sourceGroup === targetGroup ? 0.3 : 0.8; 
+      }
+      return 0.5;
+    })
     .linkDirectionalParticles(0) // Disabled by default for performance
     .linkDirectionalParticleWidth(1.0)
-    .linkDirectionalParticleSpeed(0.003)
+    .linkDirectionalParticleSpeed(link => {
+      if (typeof activeLayer !== 'undefined' && activeLayer === 'bloodflow') {
+        const targetId = link.target.id || link.target;
+        const targetNode = data.graph.nodes.find(n => n.id === targetId);
+        const hScore = targetNode?.hotspotScore || 0;
+        return 0.002 + (hScore / 6000); // Super fast flow into hotspots
+      }
+      return 0.003;
+    })
     .enableNodeDrag(false)
     .showNavInfo(false)
     .nodeLabel(node => {
-      const ext = node.name.match(/\.[0-9a-z]+$/i);
-      const colorStr = (ext && colorMap[ext[0].toLowerCase()]) ? colorMap[ext[0].toLowerCase()] : '#9ca3af';
+      const colorStr = getSemanticColor(node.id, node.name);
       return `
         <div class="node-tooltip" style="
           background: var(--bg-glass);
@@ -91,6 +150,8 @@ export function initGraph(container, data) {
       `;
     })
     .onNodeClick(node => {
+      window._currentSelectedNode = node.id;
+      
       // Focus camera
       const distance = 80;
       const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
@@ -109,14 +170,259 @@ export function initGraph(container, data) {
       });
     });
 
-  // Tune Physics for "Organic Galaxy" layout
-  Graph.d3Force('charge').strength(node => node.type === 'folder' ? -800 : -200); // Stronger repulsion for clusters
-  Graph.d3Force('charge').distanceMax(400); // Cut off repulsion to keep galaxies tight
-  Graph.d3Force('link').distance(link => link.type === 'structure' ? 10 : 60); // Shorter links to pull connected things tighter
+  // Tune Physics for Architectural "City Block" layout
+  Graph.d3Force('charge').strength(node => node.type === 'folder' ? -100 : -200);
+  Graph.d3Force('charge').distanceMax(300); 
+  
+  const linkForce = Graph.d3Force('link');
+  linkForce.distance(link => {
+    if (link.type === 'structure') {
+      const sourceGroup = link.source.structGroup || link.source;
+      const targetGroup = link.target.structGroup || link.target;
+      return sourceGroup === targetGroup ? 30 : 600; // Push cross-module far away
+    }
+    return 60;
+  });
+  
+  // Prevent cross-module links from dragging clusters together
+  linkForce.strength(link => {
+    if (link.type === 'structure') {
+      const sourceGroup = link.source.structGroup || link.source;
+      const targetGroup = link.target.structGroup || link.target;
+      return sourceGroup === targetGroup ? 1.0 : 0.02; // Very weak pull for cross-module
+    }
+    return 1;
+  });
+  
+  // Custom force to pull nodes into their structural groups
+  Graph.d3Force('groupClustering', (alpha) => {
+    if (activeLayer === 'skeleton') {
+      data.graph.nodes.forEach(node => {
+        const target = groupCenters[node.structGroup];
+        if (target) {
+          node.vx += (target.x - node.x) * alpha * 0.15;
+          node.vy += (target.y - node.y) * alpha * 0.15;
+          node.vz += (target.z - node.z) * alpha * 0.15;
+        }
+      });
+    }
+  });
+
+  Graph.d3Force('organClustering', (alpha) => {
+    if (activeLayer === 'organs' && window.__organCenters) {
+      data.graph.nodes.forEach(node => {
+        if (node.organ) {
+          const target = window.__organCenters[node.organ.id];
+          if (target) {
+            node.vx += (target.x - node.x) * alpha * 0.2;
+            node.vy += (target.y - node.y) * alpha * 0.2;
+            node.vz += (target.z - node.z) * alpha * 0.2;
+          }
+        }
+      });
+    }
+  });
+
+  const scene = Graph.scene();
+  let organSpheres = {};
+  let structuralSpheres = {};
+
+  Graph.onEngineTick(() => {
+    // Logic for Structural bounding spheres
+    if (activeLayer === 'skeleton') {
+      if (Object.keys(structuralSpheres).length === 0) {
+        Object.keys(structuralGroups).forEach(groupId => {
+          if (groupId === 'Root') return; // Don't bound the root
+          const geometry = new THREE.SphereGeometry(1, 24, 24);
+          const material = new THREE.MeshLambertMaterial({
+            color: structuralGroups[groupId].color,
+            transparent: true,
+            opacity: 0.05, // very subtle glowing bubble
+            depthWrite: false,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+          scene.add(mesh);
+          structuralSpheres[groupId] = { mesh, nodes: structuralGroups[groupId].nodes };
+        });
+      }
+
+      Object.values(structuralSpheres).forEach(sphereData => {
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        let minZ = Infinity, maxZ = -Infinity;
+        let validNodes = 0;
+
+        sphereData.nodes.forEach(nodeId => {
+          const n = data.graph.nodes.find(node => node.id === nodeId);
+          if (n && n.x !== undefined) {
+            minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+            minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+            minZ = Math.min(minZ, n.z); maxZ = Math.max(maxZ, n.z);
+            validNodes++;
+          }
+        });
+
+        if (validNodes > 0) {
+          sphereData.mesh.visible = true;
+          const cx = (minX + maxX) / 2;
+          const cy = (minY + maxY) / 2;
+          const cz = (minZ + maxZ) / 2;
+          
+          // Use standard deviation for radius to prevent outliers from making massive spheres
+          let varX = 0, varY = 0, varZ = 0;
+          sphereData.nodes.forEach(nodeId => {
+            const n = data.graph.nodes.find(node => node.id === nodeId);
+            if (n && n.x !== undefined) {
+              varX += Math.pow(n.x - cx, 2);
+              varY += Math.pow(n.y - cy, 2);
+              varZ += Math.pow(n.z - cz, 2);
+            }
+          });
+          const stdX = Math.sqrt(varX / validNodes);
+          const stdY = Math.sqrt(varY / validNodes);
+          const stdZ = Math.sqrt(varZ / validNodes);
+          
+          // Radius based on std deviation keeps it tight around the core cluster
+          const radius = Math.max(30, Math.max(stdX, Math.max(stdY, stdZ)) * 2.5);
+
+          sphereData.mesh.position.set(cx, cy, cz);
+          sphereData.mesh.scale.set(radius, radius, radius);
+        } else {
+          sphereData.mesh.visible = false;
+        }
+      });
+    } else {
+      Object.values(structuralSpheres).forEach(s => s.mesh.visible = false);
+    }
+
+    if (activeLayer === 'disease') {
+      const time = Date.now() * 0.005;
+      const pulse = 1 + Math.sin(time) * 0.25;
+      data.graph.nodes.forEach(n => {
+        if (n.healthScore !== undefined && n.healthScore < 50 && n.__threeObj) {
+          n.__threeObj.scale.set(pulse, pulse, pulse);
+        }
+      });
+    } else {
+      data.graph.nodes.forEach(n => {
+        if (n.__threeObj) n.__threeObj.scale.set(1, 1, 1);
+      });
+    }
+
+    // Logic for Organ bounding spheres
+    if (activeLayer === 'organs' && data.organs && data.organs.clusters) {
+      // Create spheres if they don't exist
+      if (Object.keys(organSpheres).length === 0) {
+        data.organs.clusters.forEach(cluster => {
+          if (cluster.id === 'other') return; // Don't bound unclassified nodes
+          const geometry = new THREE.SphereGeometry(1, 24, 24);
+          const material = new THREE.MeshLambertMaterial({
+            color: cluster.color,
+            transparent: true,
+            opacity: 0.1,
+            depthWrite: false,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+          scene.add(mesh);
+
+          const label = new SpriteText(cluster.name);
+          label.color = cluster.color;
+          label.textHeight = 40;
+          label.fontWeight = 'bold';
+          label.backgroundColor = 'rgba(0,0,0,0.6)';
+          label.padding = 6;
+          label.borderRadius = 8;
+          scene.add(label);
+
+          organSpheres[cluster.id] = { mesh, label, nodes: cluster.files };
+        });
+      }
+
+      // Update positions and sizes based on nodes
+      Object.values(organSpheres).forEach(organ => {
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        let minZ = Infinity, maxZ = -Infinity;
+        let validNodes = 0;
+
+        organ.nodes.forEach(nodeId => {
+          const n = data.graph.nodes.find(node => node.id === nodeId);
+          if (n && n.x !== undefined) {
+            minX = Math.min(minX, n.x); maxX = Math.max(maxX, n.x);
+            minY = Math.min(minY, n.y); maxY = Math.max(maxY, n.y);
+            minZ = Math.min(minZ, n.z); maxZ = Math.max(maxZ, n.z);
+            validNodes++;
+          }
+        });
+
+        if (validNodes > 0) {
+          organ.mesh.visible = true;
+          organ.label.visible = true;
+          const cx = (minX + maxX) / 2;
+          const cy = (minY + maxY) / 2;
+          const cz = (minZ + maxZ) / 2;
+          
+          let varX = 0, varY = 0, varZ = 0;
+          organ.nodes.forEach(nodeId => {
+            const n = data.graph.nodes.find(node => node.id === nodeId);
+            if (n && n.x !== undefined) {
+              varX += Math.pow(n.x - cx, 2);
+              varY += Math.pow(n.y - cy, 2);
+              varZ += Math.pow(n.z - cz, 2);
+            }
+          });
+          const stdX = Math.sqrt(varX / validNodes);
+          const stdY = Math.sqrt(varY / validNodes);
+          const stdZ = Math.sqrt(varZ / validNodes);
+          
+          const radius = Math.max(40, Math.max(stdX, Math.max(stdY, stdZ)) * 2.5);
+
+          organ.mesh.position.set(cx, cy, cz);
+          organ.mesh.scale.set(radius, radius, radius);
+          organ.label.position.set(cx, cy + radius + 30, cz);
+        } else {
+           organ.mesh.visible = false;
+           organ.label.visible = false;
+        }
+      });
+    } else {
+      // Hide spheres if layer is not active
+      Object.values(organSpheres).forEach(organ => {
+        organ.mesh.visible = false;
+        if (organ.label) organ.label.visible = false;
+      });
+    }
+  });
 
   let activeLayer = 'skeleton';
   let highlightedNodes = [];
   let heatmapMode = 'none';
+  let isolatedNode = null;
+  let isolatedNeighbors = new Set();
+  
+  window.addEventListener('graph:isolate-node', (e) => {
+    const nodeId = e.detail.nodeId;
+    if (isolatedNode === nodeId) {
+      // Toggle off if already isolated
+      isolatedNode = null;
+      isolatedNeighbors.clear();
+    } else {
+      isolatedNode = nodeId;
+      isolatedNeighbors.clear();
+      data.graph.links.forEach(l => {
+        const sourceId = l.source.id || l.source;
+        const targetId = l.target.id || l.target;
+        if (sourceId === nodeId) isolatedNeighbors.add(targetId);
+        if (targetId === nodeId) isolatedNeighbors.add(sourceId);
+      });
+    }
+    Graph.nodeThreeObject(node => createNodeObject(node, activeLayer));
+    Graph.linkColor(Graph.linkColor()); // Trigger link update
+  });
 
   const createNodeObject = (node, layer) => {
     if (node.type === 'folder') {
@@ -148,16 +454,20 @@ export function initGraph(container, data) {
       const ratio = node.archaeology.churnRatio || 0;
       colorStr = `hsl(${240 - (ratio * 240)}, 100%, 50%)`;
     } else {
-      const ext = node.name.match(/\.[0-9a-z]+$/i);
-      colorStr = (ext && colorMap[ext[0].toLowerCase()]) ? colorMap[ext[0].toLowerCase()] : '#9ca3af';
+      colorStr = getSemanticColor(node.id, node.name);
       
-      // In Disease Layer, override color based on health
       if (layer === 'disease') {
         const score = node.healthScore !== undefined ? node.healthScore : 100;
         if (score >= 90) colorStr = '#10b981'; // Green
         else if (score >= 70) colorStr = colorStr; // Normal
         else if (score >= 50) colorStr = '#f59e0b'; // Orange
         else colorStr = '#f43f5e'; // Red
+      } else if (layer === 'bloodflow') {
+        const hScore = node.hotspotScore || 0;
+        if (hScore > 80) colorStr = '#ef4444'; // Radioactive Red
+        else if (hScore > 50) colorStr = '#f97316'; // Orange
+        else if (hScore > 20) colorStr = '#fbbf24'; // Yellow
+        else colorStr = '#1e293b'; // Cold/untouched
       } else if (layer === 'organs' && node.organ) {
         colorStr = node.organ.color;
       }
@@ -169,6 +479,9 @@ export function initGraph(container, data) {
     let radius = 3;
     if (heatmapMode === 'churn' && node.archaeology) {
       radius = 3 + (node.archaeology.churnRatio * 6);
+    } else if (layer === 'bloodflow') {
+      const hScore = node.hotspotScore || 0;
+      radius = Math.max(3, 3 + (hScore / 6)); // Massive nodes for extreme hotspots
     } else {
       const locScale = Math.log10((node.lines?.total || 10) + 1);
       radius = Math.max(3, locScale * 3);
@@ -177,13 +490,28 @@ export function initGraph(container, data) {
     // Core Geometry (Ultra-Low-Poly Box for Performance)
     const geometry = new THREE.BoxGeometry(radius * 1.5, radius * 1.5, radius * 1.5);
     
+    let nodeOpacity = highlightedNodes.length > 0 && !highlightedNodes.includes(node.id) ? 0.1 : 0.9;
+    
+    if (heatmapMode === 'churn' && node.archaeology && data.archaeology && data.archaeology.scrubPercent !== undefined) {
+      const scrubLimit = data.archaeology.scrubPercent / 100;
+      if (node.archaeology.churnRatio > scrubLimit && scrubLimit < 1) {
+        nodeOpacity = 0.05; // Fade out files more volatile than the scrub threshold
+      }
+    }
+
+    if (isolatedNode) {
+      if (node.id === isolatedNode) nodeOpacity = 1.0;
+      else if (isolatedNeighbors.has(node.id)) nodeOpacity = 0.5;
+      else nodeOpacity = 0.02;
+    }
+    
     // Cheaper Lambert Material
     const material = new THREE.MeshLambertMaterial({
       color: colorStr,
       emissive: colorStr,
-      emissiveIntensity: (layer === 'disease' && (node.healthScore < 50)) || highlightedNodes.includes(node.id) ? 0.8 : 0.4,
+      emissiveIntensity: (layer === 'disease' && (node.healthScore < 50)) || (layer === 'bloodflow' && (node.hotspotScore || 0) > 50) || highlightedNodes.includes(node.id) || node.id === isolatedNode ? 0.8 : 0.4,
       transparent: true,
-      opacity: highlightedNodes.length > 0 && !highlightedNodes.includes(node.id) ? 0.1 : 0.9
+      opacity: nodeOpacity
     });
     const core = new THREE.Mesh(geometry, material);
     group.add(core);
@@ -200,6 +528,9 @@ export function initGraph(container, data) {
     if (highlightedNodes.length > 0 && !highlightedNodes.includes(node.id)) {
       sprite.material.opacity = 0.2;
     }
+    if (isolatedNode && node.id !== isolatedNode && !isolatedNeighbors.has(node.id)) {
+      sprite.material.opacity = 0.02;
+    }
     group.add(sprite);
 
     // Random initial rotation for variety
@@ -211,14 +542,31 @@ export function initGraph(container, data) {
   // Initial render
   Graph.nodeThreeObject(node => createNodeObject(node, activeLayer));
   
-  // Custom link colors for Disease layer and Blood Flow
+  // Custom link colors for layers
   Graph.linkColor(link => {
-    if (link.type === 'structure') return 'rgba(6, 182, 212, 0.05)';
+    const sourceId = link.source.id || link.source;
+    const targetId = link.target.id || link.target;
+    
+    if (isolatedNode) {
+      if (sourceId === isolatedNode || targetId === isolatedNode) {
+        return 'rgba(139, 92, 246, 0.8)'; // Bright purple
+      }
+      return 'rgba(255, 255, 255, 0.02)'; // Invisible
+    }
+
+    if (link.type === 'structure' && activeLayer === 'skeleton') {
+      const sourceGroup = link.source.structGroup || link.source;
+      const targetGroup = link.target.structGroup || link.target;
+      return sourceGroup === targetGroup ? 'rgba(6, 182, 212, 0.15)' : 'rgba(244, 63, 94, 0.1)';
+    } else if (link.type === 'structure') {
+      return 'rgba(6, 182, 212, 0.05)';
+    }
     if (activeLayer === 'disease') {
       const s = link.source.healthScore !== undefined ? link.source.healthScore : 100;
       const t = link.target.healthScore !== undefined ? link.target.healthScore : 100;
-      if (s < 50 || t < 50) return 'rgba(244, 63, 94, 0.4)';
-      if (s < 70 || t < 70) return 'rgba(245, 158, 11, 0.2)';
+      if (s < 50 || t < 50) return 'rgba(249, 115, 22, 0.8)'; // Glowing orange for spreading infection
+      if (s < 70 || t < 70) return 'rgba(245, 158, 11, 0.3)';
+      return 'rgba(255, 255, 255, 0.02)'; // Fade out healthy links
     } else if (activeLayer === 'bloodflow' && link.flowType) {
       // Very faint link color, rely on particles for visual weight
       return 'rgba(255, 255, 255, 0.05)';
@@ -227,6 +575,12 @@ export function initGraph(container, data) {
   });
   
   Graph.linkDirectionalParticles(link => {
+    if (link.type === 'structure' && activeLayer === 'skeleton') {
+      const sourceGroup = link.source.structGroup || link.source;
+      const targetGroup = link.target.structGroup || link.target;
+      if (sourceGroup !== targetGroup) return 1; // Pulse cross-module traffic
+      return 0;
+    }
     if (link.type === 'structure') return 0;
     if (activeLayer === 'bloodflow' && link.flowType && link.flowType !== 'execution') {
       return 3;
@@ -237,6 +591,7 @@ export function initGraph(container, data) {
   });
   
   Graph.linkDirectionalParticleColor(link => {
+    if (activeLayer === 'skeleton') return 'rgba(244, 63, 94, 0.6)'; // Red highway cars
     return activeLayer === 'bloodflow' ? link.particleColor : 'rgba(255,255,255,0.5)';
   });
   
@@ -248,7 +603,6 @@ export function initGraph(container, data) {
   });
 
   // Add ambient and point lights
-  const scene = Graph.scene();
   scene.add(new THREE.AmbientLight(0x404040, 2));
   const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
   pointLight.position.set(0, 0, 0);
@@ -308,19 +662,19 @@ export function initGraph(container, data) {
   });
 
   // Load toolbar
-  import('../components/toolbar.js').then(({ createToolbar }) => {
-    createToolbar(container.querySelector('#toolbar-container'), data);
-    
-    // Handle toolbar actions
-    window.addEventListener('toolbar:action', (e) => {
-      const action = e.detail.action;
-      if (action === 'btn-layer-skeleton' && activeLayer !== 'skeleton') {
-        activeLayer = 'skeleton';
-        Graph.nodeThreeObject(node => createNodeObject(node, activeLayer));
-        Graph.linkColor(Graph.linkColor()); // Trigger link update
-        
-        // Update toolbar styles
-        const tSkeleton = document.getElementById('btn-layer-skeleton');
+  window.smri.getSettings().then(settings => {
+    import('../components/toolbar.js').then(({ createToolbar }) => {
+      createToolbar(container.querySelector('#toolbar-container'), data, settings);
+      
+      // Handle toolbar actions
+      window.addEventListener('toolbar:action', async (e) => {
+        const action = e.detail.action;
+
+        if (action === 'btn-layer-skeleton' && activeLayer !== 'skeleton') {
+          activeLayer = 'skeleton';
+          Graph.nodeThreeObject(node => createNodeObject(node, activeLayer));
+          Graph.linkColor(Graph.linkColor()); // Trigger link update
+          
         const tDisease = document.getElementById('btn-layer-disease');
         const tOrgans = document.getElementById('btn-layer-organs');
         const tBloodflow = document.getElementById('btn-layer-bloodflow');
@@ -383,6 +737,22 @@ export function initGraph(container, data) {
             }
           });
 
+          // Calculate Solar System Centers for Organs
+          const organCenters = {};
+          const phi = Math.PI * (3 - Math.sqrt(5)); // golden angle
+          const validClusters = organsData.clusters.filter(c => c.id !== 'other');
+          validClusters.forEach((cluster, i) => {
+            const y = 1 - (i / (validClusters.length - 1 || 1)) * 2; // y goes from 1 to -1
+            const radius = Math.sqrt(1 - y * y);
+            const theta = phi * i;
+            organCenters[cluster.id] = {
+              x: Math.cos(theta) * radius * 1200,
+              y: y * 1000,
+              z: Math.sin(theta) * radius * 1200
+            };
+          });
+          window.__organCenters = organCenters;
+
           Graph.nodeThreeObject(node => createNodeObject(node, activeLayer));
           Graph.linkColor(Graph.linkColor()); // Trigger link update
           Graph.linkDirectionalParticles(Graph.linkDirectionalParticles());
@@ -411,6 +781,10 @@ export function initGraph(container, data) {
           
           // Reheat the simulation to allow nodes to separate
           Graph.numDimensions(3); // Reset
+          
+          // Zoom out slightly to see all the planets
+          Graph.cameraPosition({ z: 2500 }, null, 1500);
+
         }).catch(err => {
           if (tOrgans) { tOrgans.style.opacity = '1'; tOrgans.style.pointerEvents = 'auto'; }
           console.error("Failed to fetch organs:", err);
@@ -503,6 +877,10 @@ export function initGraph(container, data) {
         });
       }
       else if (action === 'btn-brain') {
+        if (!settings.isPro && settings.llmProvider === 'none') {
+          alert("AI Brain is locked. Please configure a Bring-Your-Own-Key provider in Settings, or Upgrade to Pro for the built-in model.");
+          return;
+        }
         import('../components/chat.js').then(({ showChatPanel }) => {
           showChatPanel(container, data.projectId, (nodeIds) => {
             highlightedNodes = nodeIds || [];
@@ -545,4 +923,5 @@ export function initGraph(container, data) {
       }
     });
   });
+});
 }

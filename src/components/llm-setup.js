@@ -98,6 +98,10 @@ export async function showLLMSetup(container) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         Groq
       </button>
+      <button class="provider-btn" data-provider="openrouter" style="padding: 12px; border-radius: var(--radius-md); border: 1px solid ${provider === 'openrouter' ? 'var(--accent-cyan)' : 'var(--border-default)'}; background: ${provider === 'openrouter' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'}; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><path d="M2 12h20"/></svg>
+        OpenRouter
+      </button>
       <button class="provider-btn" data-provider="ollama" style="padding: 12px; border-radius: var(--radius-md); border: 1px solid ${provider === 'ollama' ? 'var(--accent-cyan)' : 'var(--border-default)'}; background: ${provider === 'ollama' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'}; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; grid-column: span 2;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
         Ollama (Local)
@@ -168,6 +172,17 @@ export async function showLLMSetup(container) {
           <div style="margin-top: 16px;">
             <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Model</label>
             <input type="text" id="llm-model" value="${settings.llmModels.groq || 'llama3-8b-8192'}" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-default); border-radius: var(--radius-md); color: var(--text-primary); outline: none;" placeholder="e.g. llama3-8b-8192">
+          </div>
+        </div>
+      `;
+    } else if (provider === 'openrouter') {
+      fieldsHtml = `
+        <div style="margin-top: 16px;">
+          <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">API Key</label>
+          <input type="password" id="llm-key" value="${settings.llmKeys.openrouter || ''}" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-default); border-radius: var(--radius-md); color: var(--text-primary); outline: none;">
+          <div style="margin-top: 16px;">
+            <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Model</label>
+            <input type="text" id="llm-model" value="${settings.llmModels.openrouter || 'anthropic/claude-3-haiku'}" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-default); border-radius: var(--radius-md); color: var(--text-primary); outline: none;" placeholder="e.g. anthropic/claude-3-haiku">
           </div>
         </div>
       `;

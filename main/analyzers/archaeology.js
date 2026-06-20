@@ -22,7 +22,7 @@ async function analyzeArchaeology(projectId) {
   const cwd = data.projectPath;
   
   // 1. Get total commits and first commit date (project age)
-  const logStr = await runGit(cwd, `log --format="%at"`);
+  const logStr = await runGit(cwd, `log --format=%at`);
   if (!logStr.trim()) {
     throw new Error('No Git history found in this project.');
   }
@@ -57,9 +57,37 @@ async function analyzeArchaeology(projectId) {
 
   // Calculate global max churn to normalize heatmaps
   let maxChurn = 1;
-  for (const stats of Object.values(fileStats)) {
+  const fileArray = [];
+  for (const [id, stats] of Object.entries(fileStats)) {
     if (stats.churnCount > maxChurn) maxChurn = stats.churnCount;
+    fileArray.push({ id, ...stats });
   }
+
+  // 3. Get Top Authors
+  const authorsLog = await runGit(cwd, `log --format=%aN`);
+  const authorCounts = {};
+  authorsLog.trim().split('\n').forEach(name => {
+    if (!name) return;
+    authorCounts[name] = (authorCounts[name] || 0) + 1;
+  });
+  const topAuthors = Object.entries(authorCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  // 4. Get Recent Commits
+  const recentCommitsLog = await runGit(cwd, `log -n 5 --format=%h|%an|%s|%cr`);
+  const recentCommits = recentCommitsLog.trim().split('\n').filter(Boolean).map(line => {
+    const [hash, author, message, time] = line.split('|');
+    return { hash, author, message, time };
+  });
+
+  // 5. Sorted Files (Volatile vs Stable)
+  fileArray.sort((a, b) => b.churnCount - a.churnCount);
+  const topChurned = fileArray.slice(0, 20);
+  
+  // Stable files (at least present in the last 1000 commits but least edited)
+  const topStable = [...fileArray].sort((a, b) => a.churnCount - b.churnCount).slice(0, 20);
 
   // Enrich data nodes
   data.graph.nodes.forEach(node => {
@@ -89,7 +117,11 @@ async function analyzeArchaeology(projectId) {
     totalCommits: timestamps.length,
     oldestCommit: timestamps[timestamps.length - 1],
     newestCommit: timestamps[0],
-    maxChurn
+    maxChurn,
+    topAuthors,
+    recentCommits,
+    topChurned,
+    topStable
   };
 
   memoryCache.set(projectId, data);

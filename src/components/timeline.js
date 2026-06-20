@@ -1,3 +1,5 @@
+import { showArchaeologyPanel, hideArchaeologyPanel } from './archaeology-panel.js';
+
 export function showTimeline(container, projectId, data, onHeatmapChange) {
   let panel = container.querySelector('.timeline-panel');
   if (panel) return panel;
@@ -49,6 +51,7 @@ export function showTimeline(container, projectId, data, onHeatmapChange) {
   const btnClose = panel.querySelector('#btn-close-timeline');
   btnClose.addEventListener('click', () => {
     panel.remove();
+    hideArchaeologyPanel();
     if (onHeatmapChange) onHeatmapChange('none', null);
   });
 
@@ -87,12 +90,24 @@ export function showTimeline(container, projectId, data, onHeatmapChange) {
             <span>Project Age: ${data.archaeology.totalCommits} commits</span>
             <span>Max Churn: ${data.archaeology.maxChurn} edits/file</span>
           </div>
-          <input type="range" min="0" max="100" value="100" style="width: 100%;" disabled title="Scrubbing coming soon!">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 10px; color: var(--text-muted);">Stable</span>
+            <input type="range" id="timeline-slider" min="0" max="100" value="100" style="flex: 1; accent-color: var(--accent-rose); cursor: pointer;" title="Filter by Volatility">
+            <span style="font-size: 10px; color: var(--text-muted);">Volatile</span>
+          </div>
         `;
+        
+        const slider = panel.querySelector('#timeline-slider');
+        slider.addEventListener('input', (e) => {
+          data.archaeology.scrubPercent = parseInt(e.target.value, 10);
+          if (onHeatmapChange) onHeatmapChange(select.value, data.archaeology);
+        });
         
         // Auto select churn heatmap
         select.value = 'churn';
         if (onHeatmapChange) onHeatmapChange('churn', data.archaeology);
+        
+        showArchaeologyPanel(container, data.archaeology);
 
       } catch (err) {
         btnAnalyze.textContent = 'Analyze Git History';
@@ -110,8 +125,19 @@ export function showTimeline(container, projectId, data, onHeatmapChange) {
         <span>Project Age: ${data.archaeology.totalCommits} commits</span>
         <span>Max Churn: ${data.archaeology.maxChurn} edits/file</span>
       </div>
-      <input type="range" min="0" max="100" value="100" style="width: 100%;" disabled title="Scrubbing coming soon!">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span style="font-size: 10px; color: var(--text-muted);">Stable</span>
+        <input type="range" id="timeline-slider" min="0" max="100" value="${data.archaeology.scrubPercent ?? 100}" style="flex: 1; accent-color: var(--accent-rose); cursor: pointer;" title="Filter by Volatility">
+        <span style="font-size: 10px; color: var(--text-muted);">Volatile</span>
+      </div>
     `;
+    const slider = panel.querySelector('#timeline-slider');
+    slider.addEventListener('input', (e) => {
+      data.archaeology.scrubPercent = parseInt(e.target.value, 10);
+      if (onHeatmapChange) onHeatmapChange(select.value, data.archaeology);
+    });
+    
+    showArchaeologyPanel(container, data.archaeology);
   }
 
   return panel;

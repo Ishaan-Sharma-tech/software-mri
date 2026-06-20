@@ -7,11 +7,12 @@ const path = require('path');
 const { analyzeFile } = require('./skeleton');
 const { buildGraph } = require('./dependencies');
 const { detectDiseases } = require('./disease');
+const { getGitChurn } = require('./git');
 const crypto = require('crypto');
 
 // Ignore lists
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'vendor', '__pycache__', '.next', 'out', 'coverage']);
-const IGNORE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.pdf', '.zip', '.tar', '.gz', '.exe', '.dll', '.so', '.dylib', '.class', '.jar']);
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'vendor', '__pycache__', '.next', 'out', 'coverage', 'venv', '.venv', 'env', 'release']);
+const IGNORE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.woff', '.woff2', '.ttf', '.eot', '.mp4', '.pdf', '.zip', '.tar', '.gz', '.exe', '.dll', '.so', '.dylib', '.class', '.jar', '.asar']);
 
 async function walkDir(dir, root, fileList = []) {
   const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -19,6 +20,8 @@ async function walkDir(dir, root, fileList = []) {
     if (entry.name.startsWith('.')) continue; // skip hidden
 
     const fullPath = path.join(dir, entry.name);
+    if (entry.name.endsWith('.asar')) continue; // Electron transparently treats asar as dirs, causing ENOENT crashes
+
     if (entry.isDirectory()) {
       if (!IGNORE_DIRS.has(entry.name)) {
         await walkDir(fullPath, root, fileList);
@@ -48,12 +51,8 @@ async function startAnalysis(projectPath, sender) {
   
   const allFiles = await walkDir(projectPath, projectPath);
   
-  // Free tier limit mock
-  if (allFiles.length > 500) {
-    // sender.send('analyze:error', 'Free tier limited to 500 files.');
-    // For now we'll just slice it to 500
-    allFiles.length = 500; 
-  }
+  const { getSettings } = require('../ipc/settings');
+  const settings = await getSettings();
 
   sender.send('analyze:progress', { status: 'analyzing', progress: 5, total: allFiles.length, current: 0 });
 
@@ -82,7 +81,17 @@ async function startAnalysis(projectPath, sender) {
     await new Promise(r => setTimeout(r, 10));
   }
 
-  sender.send('analyze:progress', { status: 'building_graph', progress: 95 });
+  sender.send('analyze:progress', { status: 'analyzing_git', progress: 95 });
+  
+  // Calculate Git Churn (Blood Flow)
+  const churnMap = await getGitChurn(projectPath);
+  parsedFiles.forEach(file => {
+    // try direct match or base name match if paths differ slightly
+    const normalizedId = file.id.replace(/\\/g, '/');
+    file.churnCount = churnMap.get(normalizedId) || 0;
+  });
+
+  sender.send('analyze:progress', { status: 'building_graph', progress: 98 });
   
   // Build the graph
   const graphData = buildGraph(parsedFiles);

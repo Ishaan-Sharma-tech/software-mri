@@ -128,11 +128,9 @@ software-mri/
 ├── package.json
 ├── electron-builder.yml              # Electron builder config (NSIS + MSIX)
 ├── vite.config.js                     # Vite config with Electron integration
-├── website/                           # Landing page (HTML/CSS/JS)
 ├── .github/
 │   └── workflows/
-│       └── release.yml                # CI/CD: build Win/Mac/Linux + action-gh-release
-│   │       └── pages.yml                  # CI/CD: deploy landing page to GitHub Pages
+│       └── release.yml                # CI/CD: build Win/Mac/Linux on tag push
 │
 ├── main/                              # Electron Main Process
 │   ├── index.js                       # App entry — window, tray, lifecycle
@@ -185,7 +183,7 @@ software-mri/
 │   │   └── grace.js                   # Offline grace period logic
 │   │
 │   ├── bridge/
-│   │   └── server.js                  # Local HTTP server on port 27182 (Skipped - Phase 10)
+│   │   └── server.js                  # Local HTTP server on port 27182
 │   │
 │   ├── updater/
 │   │   └── auto-update.js             # electron-updater setup
@@ -1486,29 +1484,7 @@ app.get('/api/project/:id', (req, res) => {
 
 ---
 
-## Phase 9 — Launch & Hype (Marketing / Community Building)
-
-> **Goal:** Get our first 1000 users, build momentum, and establish Software MRI as a top-tier open source project.
-
----
-
-### Launch Strategy
-
-- **Product Hunt Launch:** Create a compelling "Maker" story. Record a 60-second high-energy demo video showing the 3D galaxy visualization on a massive codebase.
-- **Hacker News (Show HN):** Write a highly technical post focusing on the WebWorker physics, custom Three.js LOD system, and Tree-sitter AST parsing.
-- **Reddit:** Target r/programming, r/webdev, r/javascript, and r/opensource. Focus on the pain point: "I built a 3D visualizer because I was tired of getting lost in 10,000-file codebases."
-- **Twitter/X (Build in Public):** Share the journey, high-quality PNG exports of famous open-source repos (React, VS Code, Linux kernel) rendered in Software MRI.
-- **Open Source Engagement:** Reach out to maintainers of large repos and send them an "MRI scan" of their codebase.
-
-### Documentation & Repository Polish
-
-- Complete rewrite of the `README.md` to be extremely visual (GIFs, screenshots).
-- Add "Badges" to the repo (License, Downloads, Version).
-- Provide an extensive `CONTRIBUTING.md` to guide new developers on how to write custom tree-sitter rules or add new `analyzers`.
-
----
-
-## Phase 10 — Team Tier + VS Code Extension (Post-Launch)
+## Phase 9 — Team Tier + VS Code Extension (Post-Launch)
 
 > **Goal:** Team collaboration features. VS Code Marketplace listing. These are post-launch priorities.
 
@@ -1626,7 +1602,6 @@ npm test -- --grep "offline grace period"
 | **6 — Blood Flow + GitHub** | 51-60 | Animated data flow, GitHub OAuth import |
 | **7 — Brain** | 61-72 | Natural language Q&A, visual answers |
 | **8 — Ship** | 73-85 | Git archaeology, auto-updates, CI/CD, MSIX |
-| **9 — Launch & Hype** | 86-95 | Product Hunt, Show HN, README polish, virality |
-| **10 — Post-Launch** | 96+ | Team tier, VS Code extension |
+| **9 — Post-Launch** | 86+ | Team tier, VS Code extension |
 
-**Total: ~95 days to widespread adoption**
+**Total: ~85 days to v1.0 launch**

@@ -35,9 +35,15 @@ export function showDashboardScreen(container) {
   }
 
   container.innerHTML = `
-    <div class="dashboard-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; background: var(--bg-primary); padding: 48px;">
+    <div class="dashboard-screen" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; background: var(--bg-primary); padding: 48px;">
       
-      <div style="max-width: 800px; width: 100%;">
+      <!-- Settings Button -->
+      <button id="btn-dashboard-settings" style="position: absolute; top: 24px; right: 24px; background: transparent; border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 8px 16px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Settings
+      </button>
+
+      <div style="max-width: 800px; width: 100%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%); padding: 0 16px;">
         <div style="text-align: center; margin-bottom: 64px;">
           <h1 style="font-size: 36px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.02em;">Software MRI</h1>
           <p style="font-size: 18px; color: var(--text-secondary);">Start a new analysis</p>
@@ -84,6 +90,10 @@ export function showDashboardScreen(container) {
       background: rgba(6, 182, 212, 0.05); 
       transform: translateX(4px);
     }
+    #btn-dashboard-settings:hover {
+      background: var(--bg-tertiary) !important;
+      color: var(--text-primary) !important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -93,7 +103,14 @@ export function showDashboardScreen(container) {
     const progressUI = createProgressOverlay(container);
     
     // Listen to progress updates
-    const unsubscribe = window.smri.onProgress((update) => {
+    const unsubscribe = window.smri.onProgress(async (update) => {
+      if (update.status === 'error') {
+        unsubscribe();
+        progressUI.remove();
+        alert('Analysis error: ' + update.message);
+        return;
+      }
+
       if (update.status === 'complete') {
         unsubscribe();
         progressUI.remove();
@@ -143,6 +160,13 @@ export function showDashboardScreen(container) {
   container.querySelector('#card-github').addEventListener('click', () => {
     import('../components/github-import.js').then(({ showGitHubImportModal }) => {
       showGitHubImportModal(document.body);
+    });
+  });
+
+  // Settings Event
+  container.querySelector('#btn-dashboard-settings').addEventListener('click', () => {
+    import('../components/llm-setup.js').then(({ showLLMSetup }) => {
+      showLLMSetup(document.body);
     });
   });
 
