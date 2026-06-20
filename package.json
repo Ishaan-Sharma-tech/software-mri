@@ -1,6 +1,6 @@
 {
   "name": "software-mri",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "See your software. Understand your software.",
   "main": "main/index.js",
   "scripts": {
